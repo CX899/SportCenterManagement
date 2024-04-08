@@ -109,6 +109,7 @@
         max-width: fit-content;
         max-height: fit-content;
         border-radius: 0.3125rem;
+        display: grid;
     }
 
     button {
