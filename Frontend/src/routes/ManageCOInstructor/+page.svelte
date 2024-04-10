@@ -62,14 +62,14 @@
     let taughtCoursesEndDate = [];
     /**
      * An array of items.
-     * @type {string[]}
+     * @type {string[][]}
      */
-    let taughtCoursesSessionsStart= [];
+    let taughtCoursesSessionsStart= [[]];
     /**
      * An array of items.
-     * @type {string[]}
+     * @type {string[][]}
      */
-    let taughtCoursesSessionsEnd= [];
+    let taughtCoursesSessionsEnd= [[]];
     /**
      * An array of items.
      * @type {string[][]}
