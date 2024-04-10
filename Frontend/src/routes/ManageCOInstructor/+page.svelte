@@ -27,14 +27,14 @@
     let endDate = "";
     /**
      * An array of items.
-     * @type {string}
+     * @type {string[]}
      */
-    let startTime = "";
+    let startTime = [];
     /**
      * An array of items.
-     * @type {string}
+     * @type {string[]}
      */
-    let endTime = "";
+    let endTime = [];
     /**
      * An array of items.
      * @type {string[]}
@@ -102,13 +102,17 @@
     /**
      * Handles the check button click event.
      * @param {number} courseId - The type of course to be approved.
-     * @returns {Promise<string>} - The ID of the clicked item.
+     * @returns {Promise<string[]>} - The ID of the clicked item.
      */
     async function getSessionsStart(courseId) {
         try {
             const response = await AXIOS.get(`/courseSessions/getByOffering?courseOfferingId=${courseId}`, {
             });
-            return response.data.startTime;
+            const answer = [];
+            for (let i = 0; i < response.data.length; i++){
+                answer.push(response.data[i].startTime);
+            }
+            return answer;
         } catch (e) {
             errorType = e;
             console.error(e);
@@ -118,14 +122,17 @@
     /**
      * Handles the check button click event.
      * @param {number} courseId - The type of course to be approved.
-     * @returns {Promise<string>} - The ID of the clicked item.
+     * @returns {Promise<string[]>} - The ID of the clicked item.
      */
     async function getSessionsEnd(courseId) {
         try {
             const response = await AXIOS.get(`/courseSessions/getByOffering?courseOfferingId=${courseId}`, {
             });
-            console.log(response.data.endTime)
-            return response.data.endTime;
+            const answer = [];
+            for (let i = 0; i < response.data.length; i++){
+                answer.push(response.data[i].endTime);
+            }
+            return answer;
         } catch (e) {
             errorType = e;
             console.error(e);
@@ -248,10 +255,10 @@
                 </h1>
             </div>
             <div class="bg-secondary-content/5 info-blocks">
-                Start Time: {startTime}
+                Start Times: {startTime}
             </div>
             <div class="bg-secondary-content/5 info-blocks">
-                End Time: {endTime}
+                End Times: {endTime}
             </div>
         </div>
     </div>
@@ -306,7 +313,8 @@
         max-width: 100%;
         overflow-y: auto; /* Enable vertical scrolling */
         border-radius: 10px; /* Rounded corners */
-        padding: 10px ;
+        padding-left: 10px ;
+        padding-right: 10px ;
         display: flex; /* Use flexbox */
         flex-direction: column; /* Arrange items vertically */
         align-items: flex-start; /* Center items horizontally */
@@ -316,8 +324,8 @@
     /* Style for list items */
     .list-item-left {
         margin-bottom: 5px;
-        border-radius: 5px; /* Rounded corners for the highlight box */
-        padding-left: 5px; /* Add left padding to create space */
+        border-radius: 10px; /* Rounded corners for the highlight box */
+        padding: 5px; /* Add left padding to create space */
         transition: background-color 0.3s; /* Smooth transition for hover effect */
         width: 100%; /* Ensure header spans the full width */
         display: flex; /* Use flexbox */
@@ -328,7 +336,6 @@
 
     /* Apply background color when hovering over list item */
     .list-item-left:hover {
-        border-radius: 5px; /* Rounded corners for the highlight box */
         font-size: 2.4vh; /* Increase font size */
     }
 
@@ -348,9 +355,10 @@
     }
 
     .info-blocks {
-        width: 99%;
+        width: 98%;
         border-radius: 10px;
         margin: 5px;
         padding: 5px;
+        font-size: 2.1vh;
     }
 </style>
