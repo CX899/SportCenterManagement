@@ -8,7 +8,11 @@
         headers: { 'Access-Control-Allow-Origin': 'http://localhost:5173/' }
     });
 
-
+    let today = new Date();
+    let year = today.getFullYear();
+    let month = String(today.getMonth() + 1).padStart(2, '0'); // Month is zero-indexed, so add 1
+    let day = String(today.getDate()).padStart(2, '0');
+    let currentDate = `${year}-${month}-${day}`;
     let errorType;
     /**
      * An array of items.
@@ -49,12 +53,32 @@
      * An array of items.
      * @type {string}
      */
-    let startDateNew = "";
+    let startDateNew = currentDate;
     /**
      * An array of items.
      * @type {string}
      */
-    let endDateNew = "";
+    let endDateNew = currentDate;
+    /**
+     * An array of items.
+     * @type {string}
+     */
+    let courseTypeNew = "";
+    /**
+     * An array of items.
+     * @type {string}
+     */
+    let newSessionDate = "";
+    /**
+     * An array of items.
+     * @type {string}
+     */
+    let newSessionStartTime = "12:30:00";
+    /**
+     * An array of items.
+     * @type {string}
+     */
+    let newSessionEndTime = "12:30:00";
     /**
      * An array of items.
      * @type {string[]}
@@ -109,6 +133,11 @@
      * An array of items.
      * @type {string[][]}
      */
+    let newSessions= [[]];
+    /**
+     * An array of items.
+     * @type {string[][]}
+     */
     let taughtCoursesSessionsEnd = [[]];
     /**
      * An array of items.
@@ -136,13 +165,13 @@
      */
     let taughtCoursesID = [];
 
-    let monday = daysOffered.includes('MONDAY');
-    let tuesday = daysOffered.includes('TUESDAY');
-    let wednesday = daysOffered.includes('WEDNESDAY');
-    let thursday = daysOffered.includes('THURSDAY');
-    let friday = daysOffered.includes('FRIDAY');
-    let saturday = daysOffered.includes('SATURDAY');
-    let sunday = daysOffered.includes('SUNDAY');
+    let monday = daysOfferedNew.includes('MONDAY');
+    let tuesday = daysOfferedNew.includes('TUESDAY');
+    let wednesday = daysOfferedNew.includes('WEDNESDAY');
+    let thursday = daysOfferedNew.includes('THURSDAY');
+    let friday = daysOfferedNew.includes('FRIDAY');
+    let saturday = daysOfferedNew.includes('SATURDAY');
+    let sunday = daysOfferedNew.includes('SUNDAY');
 
     let showUpdateContentInfo = false;
 
@@ -165,12 +194,64 @@
         }
     }
 
-    let showUpdateContentSessions = false;
-
-    function toggleUpdateContentSessions() {
-        showUpdateContentSessions = !showUpdateContentSessions;
+    function resetUpdateContentInfo() {
+        showUpdateContentInfo = !showUpdateContentInfo;
+        // Reset input fields
+        startDateNew = currentDate;
+        endDateNew = currentDate;
+        priceNew = 0;
+        floorNumberNew = 0;
+        roomNumberNew = 0;
+        // Clear checkboxes
+        monday = false;
+        tuesday = false;
+        wednesday = false;
+        thursday = false;
+        friday = false;
+        saturday = false;
+        sunday = false;
+        // Clear dropdown selection
+        courseTypeNew = "";
+        newSessionEndTime = "12:30:00";
+        newSessionStartTime = "12:30:00";
+        newSessionDate = "";
+        // Clear daysOfferedNew
+        daysOfferedNew = [];
     }
-
+    /**
+     * Handles updating the daysOffered list based on checkbox selection.
+     * @param {string} newSessionDate
+     * @param {string} newSessionStartTime
+     * @param {string} newSessionEndTime
+     * @returns {void}
+     */
+    function setSessionInfo(newSessionDate, newSessionStartTime, newSessionEndTime){
+        newSessions.push([newSessionDate,newSessionStartTime,newSessionEndTime]);
+    }
+    function confirmTester() {
+        // Reset input fields
+        console.log(startDateNew);
+        console.log(endDateNew);
+        console.log(priceNew);
+        console.log(floorNumberNew);
+        console.log(roomNumberNew)
+        // Clear checkboxes
+        console.log(monday);
+        console.log(tuesday);
+        console.log(wednesday);
+        console.log(thursday);
+        console.log(friday);
+        console.log(saturday);
+        console.log(sunday);
+        // Clear dropdown selection
+        console.log(courseTypeNew);
+        // Clear daysOfferedNew
+        console.log(daysOfferedNew);
+        console.log(newSessionDate);
+        console.log(newSessionStartTime);
+        console.log(newSessionEndTime);
+        console.log(newSessions)
+    }
 
     /**
      * Handles the check button click event.
@@ -267,14 +348,6 @@
         startTime = taughtCoursesSessionsStart[index];
         endTime =  taughtCoursesSessionsEnd[index];
         sessionDate = taughtCoursesSessionsDate[index];
-        /*
-        monday = daysOffered.includes('MONDAY');
-        tuesday = daysOffered.includes('TUESDAY');
-        wednesday = daysOffered.includes('WEDNESDAY');
-        thursday = daysOffered.includes('THURSDAY');
-        friday = daysOffered.includes('FRIDAY');
-        saturday = daysOffered.includes('SATURDAY');
-        sunday = daysOffered.includes('SUNDAY');*/
     }
 
     onMount(async () => {
@@ -360,7 +433,7 @@
     <div class="component-container component-1">
         <div class="list-container-left">
             <div class="bg-secondary/20 list-header-left-bg"> <!-- Background wrapper for list header -->
-                <h1 class="list-header-left">Taught Courses</h1>
+                <h1 class="list-header-left">Your Courses</h1>
             </div>
             <div class="scrollable-list-left">
                 <!-- Render list items -->
@@ -371,7 +444,7 @@
                 {/each}
             </div>
             <div class="button-container">
-                <button class="btn" on:click={() => {if (!showUpdateContentInfo) toggleUpdateContentInfo()}}>Create New Course</button>
+                <button class="btn btn-sm" on:click={() => {if (!showUpdateContentInfo) toggleUpdateContentInfo()}}>Create New Course</button>
             </div>
         </div>
     </div>
@@ -379,7 +452,7 @@
         {#if showUpdateContentInfo}
             <!-- Content shown when update button is clicked -->
             <div class="list-container-left">
-                <div class="bg-secondary/20 list-header-left-bg"> <!-- Background wrapper for list header -->
+                <div class="bg-accent/40 list-header-left-bg"> <!-- Background wrapper for list header -->
                     <h1 class="list-header-left">
                         Create New Course
                     </h1>
@@ -395,7 +468,7 @@
                 </div>
                 <div class="bg-secondary-content/5 input-container">
                     <label for="price">Price:</label>
-                    <input class="bg-secondary-content/5" type="number" id="price" name="price" bind:value={priceNew}>
+                    <input class="bg-secondary-content/5" type="number" id="price" name="price" bind:value={priceNew} min = "0">
                 </div>
                 <!-- Input fields for Floor Number and Room Number -->
                 <div class="bg-secondary-content/5 input-container">
@@ -410,19 +483,19 @@
                 <div class="bg-secondary-content/5 input-container-checkboxes">
                     <label>Days Offered:</label>
                     <div class="days-offered-container">
-                        <label>M <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('MONDAY')}></label>
-                        <label>Tu <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('TUESDAY')}></label>
-                        <label>W <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('WEDNESDAY')}></label>
-                        <label>Th <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('THURSDAY')}></label>
-                        <label>F <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('FRIDAY')}></label>
-                        <label>Sa <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('SATURDAY')}></label>
-                        <label>Su <input type="checkbox" class="checkbox checkbox-styling" on:change={() => updateDaysOffered('SUNDAY')}></label>
+                        <label>M <input type="checkbox" class="checkbox checkbox-styling" bind:checked={monday} on:change={() => updateDaysOffered('MONDAY')}></label>
+                        <label>Tu <input type="checkbox" class="checkbox checkbox-styling" bind:checked={tuesday} on:change={() => updateDaysOffered('TUESDAY')}></label>
+                        <label>W <input type="checkbox" class="checkbox checkbox-styling" bind:checked={wednesday} on:change={() => updateDaysOffered('WEDNESDAY')}></label>
+                        <label>Th <input type="checkbox" class="checkbox checkbox-styling" bind:checked={thursday} on:change={() => updateDaysOffered('THURSDAY')}></label>
+                        <label>F <input type="checkbox" class="checkbox checkbox-styling" bind:checked={friday} on:change={() => updateDaysOffered('FRIDAY')}></label>
+                        <label>Sa <input type="checkbox" class="checkbox checkbox-styling" bind:checked={saturday} on:change={() => updateDaysOffered('SATURDAY')}></label>
+                        <label>Su <input type="checkbox" class="checkbox checkbox-styling" bind:checked={sunday} on:change={() => updateDaysOffered('SUNDAY')}></label>
                     </div>
                 </div>
                 <!-- Dropdown for Approved Types -->
                 <div class="bg-secondary-content/5 input-container">
                     <label for="approved-types-dropdown">Course Type:</label>
-                    <select class="bg-secondary-content/5" id="approved-types-dropdown" bind:value={selectedType}>
+                    <select class="bg-secondary-content/5" id="approved-types-dropdown" bind:value={courseTypeNew}>
                         {#each approvedTypes as type}
                             <option value={type}>{type}</option>
                         {/each}
@@ -455,52 +528,87 @@
         {/if}
     </div>
     <div class="component-container component-3">
-        <div class="list-container-left">
-            <div class="bg-secondary/20 list-header-left-bg">
-                <h1 class="list-header-left">
-                    {#if selectedCourse !== ""}
-                        {selectedCourse} Sessions
-                    {:else}
-                        No course selected
-                    {/if}
-                </h1>
-            </div>
-            <div class="scrollable-list-right">
-                {#if startTime.length === endTime.length}
-                    {#each startTime as time, index}
-                        <div class="bg-secondary-content/5 info-blocks">
-                            <div>Date: {sessionDate[index]}</div>
-                            <div>Start Time: {time}</div>
-                            <div>End Time: {endTime[index]}</div>
-                        </div>
-                    {/each}
-                {:else}
-                    <div class="bg-secondary-content/5 info-blocks">
-                        Error: Start time and end time arrays have different lengths.
+        {#if showUpdateContentInfo}
+            <!-- Content when update button is clicked -->
+            <div class="list-container-left">
+                <div class="bg-accent/40 list-header-left-bg">
+                    <h1 class="list-header-left">
+                        Add Sessions To New Course
+                    </h1>
+                </div>
+                <!-- Input fields for Date, Start Time, and End Time -->
+                <div class="center-container">
+                    <div class="input-container-session">
+                        <label for="session-date">Date:</label>
+                        <input class="bg-secondary-content/5" type="date" id="session-date" name="session-date" bind:value={newSessionDate}>
                     </div>
-                {/if}
+                    <div class="input-container-session">
+                        <label for="start-time">Start Time:</label>
+                        <input class="bg-secondary-content/5" type="time" id="start-time" name="start-time" bind:value={newSessionStartTime} step="1">
+                    </div>
+                    <div class="input-container-session">
+                        <label for="end-time">End Time:</label>
+                        <input class="bg-secondary-content/5" type="time" id="end-time" name="end-time" bind:value={newSessionEndTime} step="1">
+                    </div>
+                    <div class="input-container-session">
+                        <button class="btn btn-sm" on:click={() => setSessionInfo(newSessionDate, newSessionStartTime, newSessionEndTime)} >Confirm Session</button>
+                    </div>
+                </div>
+                <!-- Button container -->
+                <div class="button-container">
+                    <button class="bg-green-500/65 hover:bg-green-500/80 btn btn-sm" on:click={() => confirmTester()}>Confirm</button>
+                    <button class=" btn btn-sm bg-red-500/65 hover:bg-red-500/80" on:click={() => resetUpdateContentInfo()}>Cancel</button>
+                </div>
             </div>
-        </div>
-        <div class="button-container">
-            <button class="btn">Update</button>
-        </div>
+        {:else}
+
+        <!-- Default content -->
+            <div class="list-container-left">
+                <div class="bg-secondary/20 list-header-left-bg">
+                    <h1 class="list-header-left">
+                        {#if selectedCourse !== ""}
+                            {selectedCourse} Sessions
+                        {:else}
+                            No course selected
+                        {/if}
+                    </h1>
+                </div>
+                <div class="scrollable-list-right">
+                    {#if startTime.length === endTime.length}
+                        {#each startTime as time, index}
+                            <div class="bg-secondary-content/5 info-blocks">
+                                <div class="time-info">
+                                    <span>Date: {sessionDate[index]}</span>
+                                    <span>Start Time: {time}</span>
+                                    <span>End Time: {endTime[index]}</span>
+                                </div>
+                            </div>
+                        {/each}
+                    {:else}
+                        <div class="bg-secondary-content/5 info-blocks">
+                            Error: Start time and end time arrays have different lengths.
+                        </div>
+                    {/if}
+                </div>
+            </div>
+        {/if}
     </div>
 </div>
 
 <style>
     .grid-container {
         display: grid;
-        grid-template-columns: repeat(4, 1fr); /* Three columns with equal width */
-        grid-template-rows: repeat(5, 1fr); /* Three rows with equal height */
-        gap: 10px; /* Gap between grid items */
+        grid-template-columns: repeat(5, 1fr); /* Three columns with equal width */
+        grid-template-rows: repeat(7, 1fr); /* Three rows with equal height */
+        gap: 5px; /* Gap between grid items */
         padding-top: 0.5vh;
-        padding-bottom: 10px;
+        padding-bottom: 0px;
         height: 90%; /* Occupy full height of the main element */
         width: 100%;
     }
 
     .component-container {
-        border: 2px solid #ccc; /* Add border for visualization */
+        border: 1px solid #ccc; /* Add border for visualization */
         border-radius: 10px;
         display: flex; /* Use flexbox */
         align-items: center; /* Center vertically */
@@ -510,19 +618,19 @@
 
     .component-1 {
         grid-column: span 2; /* Span two columns */
-        grid-row: span 5; /* Span three rows */
+        grid-row: span 7; /* Span three rows */
         position: relative;
     }
 
     .component-2 {
-        grid-column: span 2; /* Third column */
-        grid-row: span 3; /* Span three rows */
+        grid-column: span 3; /* Third column */
+        grid-row: span 4; /* Span three rows */
         position: relative;
 
     }
     .component-3 {
-        grid-column: span 2; /* Third column */
-        grid-row: span 2; /* Span three rows */
+        grid-column: span 3; /* Third column */
+        grid-row: span 3; /* Span three rows */
         position: relative;
     }
 
@@ -550,7 +658,7 @@
     }
     /* Add CSS styles for the scrollable list */
     .scrollable-list-right {
-        max-height: 65%; /* Limit the height of the list */
+        max-height: 70%; /* Limit the height of the list */
         max-width: 100%;
         margin-bottom: 1vh;
         overflow-y: auto; /* Enable vertical scrolling */
@@ -611,7 +719,17 @@
         padding: 5px;
         font-size: 2.1vh;
     }
+    .input-container-session {
+        border-radius: 10px;
+        display: inline-block; /* Display the input containers in a line */
+        width: calc(25% - 2%); /* Set width to occupy 1/3 of the available space */
+        font-size: 2.1vh;
+        text-align: center; /* Reset text alignment to left within the input container */
 
+    }
+    .center-container {
+        text-align: center; /* Center the child elements horizontally */
+    }
 
     .button-container {
         position: absolute; /* Position the button container */
@@ -645,4 +763,12 @@
         height: 2vh;
     }
 
+    .time-info {
+        display: flex;
+    }
+
+    .time-info span {
+        flex: 1; /* Each span occupies 1/3 of the available space */
+        text-align: center; /* Center-align text within each span */
+    }
 </style>
