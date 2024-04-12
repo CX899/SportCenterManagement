@@ -398,7 +398,6 @@
     }
 
     function confirmCreation(){
-        confirmTester()
         getRoomId()
         getCourseTypeId()
         confirmTester()
@@ -421,6 +420,67 @@
             .catch(e => {
                 errorType = e;
             });
+
+        AXIOS.get('courseOfferings/getByInstructor',{
+            headers:{
+                'userToken': 'dsaw'
+            }
+        })
+            .then(async response => {
+                const courses = response.data;
+                const coursesList = [];
+                const courseListStartDate = [];
+                const courseListEndDate = [];
+                const coursesListID = [];
+                const coursesListDaysOffered = [];
+                const coursesListSessionsStart = [];
+                const coursesListSessionsEnd = [];
+                const coursesListSessionsDate = [];
+
+
+                for (let i = 0; i < courses.length; i++) {
+                    const course = courses[i];
+                    const courseName = await getCourseName(course.courseTypeId);
+                    const courseSessionsStart = await getSessionsStart(course.id);
+                    const courseSessionsEnd = await getSessionsEnd(course.id);
+                    const courseSessionsDate = await getSessionsDate(course.id);
+
+                    coursesList.push(courseName);
+                    courseListStartDate.push(course.startDate);
+                    courseListEndDate.push(course.endDate);
+                    coursesListID.push(course.id);
+                    coursesListDaysOffered.push(course.daysOffered);
+                    coursesListSessionsStart.push(courseSessionsStart);
+                    coursesListSessionsEnd.push(courseSessionsEnd);
+                    coursesListSessionsDate.push(courseSessionsDate);
+
+                }
+
+                taughtCourses = coursesList; // Update items array with the new values
+                taughtCoursesStartDate = courseListStartDate;
+                taughtCoursesEndDate = courseListEndDate;
+                taughtCoursesID = coursesListID;
+                taughtCoursesDaysOffered = coursesListDaysOffered;
+                taughtCoursesSessionsStart = coursesListSessionsStart;
+                taughtCoursesSessionsEnd = coursesListSessionsEnd;
+                taughtCoursesSessionsDate = coursesListSessionsDate;
+
+            })
+            .catch(e => {
+                errorType = e;
+            });
+        const id = taughtCoursesID[taughtCoursesID.length - 1];
+        for (let i= 0; i < newSessions.length; i++) {
+            const requestDataSession = {
+                "date": newSessions[i][0],
+                "startTime": newSessions[i][1],
+                "endTime": newSessions[i][2],
+                "courseOfferingId": id
+            };
+            AXIOS.post
+        }
+        toggleUpdateContentInfo();
+        resetUpdateContentInfo();
     }
 
     onMount(async () => {
