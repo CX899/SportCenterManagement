@@ -189,6 +189,11 @@
      * @type {number[]}
      */
     let roomsFloorNumber = [];
+    /**
+     * An array of items.
+     * @type {string[]}
+     */
+    let roomsName = [];
 
     let monday = daysOfferedNew.includes('MONDAY');
     let tuesday = daysOfferedNew.includes('TUESDAY');
@@ -235,13 +240,15 @@
         friday = false;
         saturday = false;
         sunday = false;
-        // Clear dropdown selection
         courseTypeNew = "";
+        courseTypeNewId = 0;
         newSessionEndTime = "12:30:00";
         newSessionStartTime = "12:30:00";
         newSessionDate = currentDate;
-        // Clear daysOfferedNew
+        newSessions= []
+        roomIdNew = 0;
         daysOfferedNew = [];
+
     }
     /**
      * Handles updating the daysOffered list based on checkbox selection.
@@ -378,7 +385,7 @@
         sessionDate = taughtCoursesSessionsDate[index];
     }
 
-    function getRoomId() {
+    /*function getRoomId() {
         for (let i = 0; i < roomsId.length; i++) {
             if (roomsFloorNumber[i] === floorNumberNew && roomCapacities[i] === roomNumberNew) {
                 roomIdNew = roomsId[i]; // Return the room ID if the floor number matches
@@ -386,7 +393,7 @@
         }
         // Return null if no matching room is found
         return null;
-    }
+    }*/
 
     function getCourseTypeId() {
         for (let i= 0; i < approvedTypes.length; i++) {
@@ -398,7 +405,7 @@
     }
 
     function confirmCreation(){
-        getRoomId()
+        //getRoomId()
         getCourseTypeId()
         confirmTester()
         const requestData = {
@@ -416,71 +423,132 @@
 
         })
             .then(response => {
+                setTimeout(() => {
+                    AXIOS.get('courseOfferings/getByInstructor',{
+                        headers:{
+                            'userToken': 'dsaw'
+                        }
+                    })
+                        .then(async response => {
+                            const courses = response.data;
+                            const coursesList = [];
+                            const courseListStartDate = [];
+                            const courseListEndDate = [];
+                            const coursesListID = [];
+                            const coursesListDaysOffered = [];
+                            const coursesListSessionsStart = [];
+                            const coursesListSessionsEnd = [];
+                            const coursesListSessionsDate = [];
+
+
+                            for (let i = 0; i < courses.length; i++) {
+                                const course = courses[i];
+                                const courseName = await getCourseName(course.courseTypeId);
+                                const courseSessionsStart = await getSessionsStart(course.id);
+                                const courseSessionsEnd = await getSessionsEnd(course.id);
+                                const courseSessionsDate = await getSessionsDate(course.id);
+
+                                coursesList.push(courseName);
+                                courseListStartDate.push(course.startDate);
+                                courseListEndDate.push(course.endDate);
+                                coursesListID.push(course.id);
+                                coursesListDaysOffered.push(course.daysOffered);
+                                coursesListSessionsStart.push(courseSessionsStart);
+                                coursesListSessionsEnd.push(courseSessionsEnd);
+                                coursesListSessionsDate.push(courseSessionsDate);
+
+                            }
+
+                            taughtCourses = coursesList; // Update items array with the new values
+                            taughtCoursesStartDate = courseListStartDate;
+                            taughtCoursesEndDate = courseListEndDate;
+                            taughtCoursesID = coursesListID;
+                            taughtCoursesDaysOffered = coursesListDaysOffered;
+                            taughtCoursesSessionsStart = coursesListSessionsStart;
+                            taughtCoursesSessionsEnd = coursesListSessionsEnd;
+                            taughtCoursesSessionsDate = coursesListSessionsDate;
+
+                            console.log(taughtCoursesID);
+                            const id = taughtCoursesID[taughtCoursesID.length-1];
+                            for (let i= 0; i < newSessions.length; i++) {
+                                const requestDataSession = {
+                                    "date": newSessions[i][0],
+                                    "startTime": newSessions[i][1],
+                                    "endTime": newSessions[i][2],
+                                    "courseOfferingId": id
+                                };
+                                console.log(requestDataSession)
+                                AXIOS.post("courseSessions/createSingle", requestDataSession, {
+                                    headers: {
+                                        'userToken': 'dsaw'
+                                    }
+
+                                })
+                                    .then(response => {
+                                        AXIOS.get('courseOfferings/getByInstructor',{
+                                            headers:{
+                                                'userToken': 'dsaw'
+                                            }
+                                        })
+                                            .then(async response => {
+                                                const courses = response.data;
+                                                const coursesList = [];
+                                                const courseListStartDate = [];
+                                                const courseListEndDate = [];
+                                                const coursesListID = [];
+                                                const coursesListDaysOffered = [];
+                                                const coursesListSessionsStart = [];
+                                                const coursesListSessionsEnd = [];
+                                                const coursesListSessionsDate = [];
+
+
+                                                for (let i = 0; i < courses.length; i++) {
+                                                    const course = courses[i];
+                                                    const courseName = await getCourseName(course.courseTypeId);
+                                                    const courseSessionsStart = await getSessionsStart(course.id);
+                                                    const courseSessionsEnd = await getSessionsEnd(course.id);
+                                                    const courseSessionsDate = await getSessionsDate(course.id);
+
+                                                    coursesList.push(courseName);
+                                                    courseListStartDate.push(course.startDate);
+                                                    courseListEndDate.push(course.endDate);
+                                                    coursesListID.push(course.id);
+                                                    coursesListDaysOffered.push(course.daysOffered);
+                                                    coursesListSessionsStart.push(courseSessionsStart);
+                                                    coursesListSessionsEnd.push(courseSessionsEnd);
+                                                    coursesListSessionsDate.push(courseSessionsDate);
+
+                                                }
+
+                                                taughtCourses = coursesList; // Update items array with the new values
+                                                taughtCoursesStartDate = courseListStartDate;
+                                                taughtCoursesEndDate = courseListEndDate;
+                                                taughtCoursesID = coursesListID;
+                                                taughtCoursesDaysOffered = coursesListDaysOffered;
+                                                taughtCoursesSessionsStart = coursesListSessionsStart;
+                                                taughtCoursesSessionsEnd = coursesListSessionsEnd;
+                                                taughtCoursesSessionsDate = coursesListSessionsDate;
+
+                                            })
+                                            .catch(e => {
+                                                errorType = e;
+                                            });
+                                    })
+                                    .catch(e => {
+                                        errorType = e;
+                                    });
+                            }
+                            resetUpdateContentInfo();
+
+                        })
+                        .catch(e => {
+                            errorType = e;
+                        });
+                }, 10); //  delay
             })
             .catch(e => {
                 errorType = e;
             });
-
-        AXIOS.get('courseOfferings/getByInstructor',{
-            headers:{
-                'userToken': 'dsaw'
-            }
-        })
-            .then(async response => {
-                const courses = response.data;
-                const coursesList = [];
-                const courseListStartDate = [];
-                const courseListEndDate = [];
-                const coursesListID = [];
-                const coursesListDaysOffered = [];
-                const coursesListSessionsStart = [];
-                const coursesListSessionsEnd = [];
-                const coursesListSessionsDate = [];
-
-
-                for (let i = 0; i < courses.length; i++) {
-                    const course = courses[i];
-                    const courseName = await getCourseName(course.courseTypeId);
-                    const courseSessionsStart = await getSessionsStart(course.id);
-                    const courseSessionsEnd = await getSessionsEnd(course.id);
-                    const courseSessionsDate = await getSessionsDate(course.id);
-
-                    coursesList.push(courseName);
-                    courseListStartDate.push(course.startDate);
-                    courseListEndDate.push(course.endDate);
-                    coursesListID.push(course.id);
-                    coursesListDaysOffered.push(course.daysOffered);
-                    coursesListSessionsStart.push(courseSessionsStart);
-                    coursesListSessionsEnd.push(courseSessionsEnd);
-                    coursesListSessionsDate.push(courseSessionsDate);
-
-                }
-
-                taughtCourses = coursesList; // Update items array with the new values
-                taughtCoursesStartDate = courseListStartDate;
-                taughtCoursesEndDate = courseListEndDate;
-                taughtCoursesID = coursesListID;
-                taughtCoursesDaysOffered = coursesListDaysOffered;
-                taughtCoursesSessionsStart = coursesListSessionsStart;
-                taughtCoursesSessionsEnd = coursesListSessionsEnd;
-                taughtCoursesSessionsDate = coursesListSessionsDate;
-
-            })
-            .catch(e => {
-                errorType = e;
-            });
-        const id = taughtCoursesID[taughtCoursesID.length - 1];
-        for (let i= 0; i < newSessions.length; i++) {
-            const requestDataSession = {
-                "date": newSessions[i][0],
-                "startTime": newSessions[i][1],
-                "endTime": newSessions[i][2],
-                "courseOfferingId": id
-            };
-            AXIOS.post
-        }
-        toggleUpdateContentInfo();
-        resetUpdateContentInfo();
     }
 
     onMount(async () => {
@@ -570,17 +638,20 @@
                 const holderRooms= [];
                 const holderRoomsId = []
                 const holderFloor = []
+                const holderName = []
 
                 for (let i = 0; i < rooms.length; i++) {
                     const room = rooms[i];
                     holderRooms.push(room.capacity);
                     holderRoomsId.push(room.id);
                     holderFloor.push(room.floorNumber)
+                    holderName.push(room.name)
                 }
 
                 roomCapacities = holderRooms; // Update items array with the new values
                 roomsId = holderRoomsId;
                 roomsFloorNumber = holderFloor
+                roomsName = holderName
             })
             .catch(e => {
                 errorType = e;
@@ -630,13 +701,16 @@
                     <input class="bg-secondary-content/5" type="number" id="price" name="price" bind:value={priceNew} min = "0">
                 </div>
                 <!-- Input fields for Floor Number and Room Number -->
+                <!-- Dropdown for Room Selection -->
                 <div class="bg-secondary-content/5 input-container">
-                    <label for="floor-number">Floor Number:</label>
-                    <input class="bg-secondary-content/5" type="number" id="floor-number" name="floor-number" bind:value={floorNumberNew} min="1">
-                </div>
-                <div class="bg-secondary-content/5 input-container">
-                    <label for="room-number">Room Number:</label>
-                    <input class="bg-secondary-content/5" type="number" id="room-number" name="room-number" bind:value={roomNumberNew} min="1">
+                    <label for="room-dropdown">Room Selection:</label>
+                    <select class="bg-secondary-content/5" id="room-dropdown" bind:value={roomIdNew}>
+                        {#each roomsId as id, index}
+                            <option value={id}>
+                                Name: {roomsName[index]} | Floor Number: {roomsFloorNumber[index]} | Capacity: {roomCapacities[index]}
+                            </option>
+                        {/each}
+                    </select>
                 </div>
                 <!-- Input fields for Days Offered -->
                 <div class="bg-secondary-content/5 input-container-checkboxes">
@@ -902,6 +976,7 @@
         margin: 5px;
         padding: 5px;
         font-size: 2.1vh;
+        padding-left: 10px;
     }
     .input-container-session {
         border-radius: 10px;
@@ -934,6 +1009,7 @@
         border-radius: 10px;
         margin: 5px;
         padding: 5px;
+        padding-left: 10px;
         font-size: 2.1vh;
     }
 
