@@ -51,6 +51,16 @@
     let roomNumberNew = 0;
     /**
      * An array of items.
+     * @type {number}
+     */
+    let roomIdNew = 0;
+    /**
+     * An array of items.
+     * @type {number}
+     */
+    let courseTypeNewId = 0;
+    /**
+     * An array of items.
      * @type {string}
      */
     let startDateNew = currentDate;
@@ -68,7 +78,7 @@
      * An array of items.
      * @type {string}
      */
-    let newSessionDate = "";
+    let newSessionDate = currentDate;
     /**
      * An array of items.
      * @type {string}
@@ -133,7 +143,7 @@
      * An array of items.
      * @type {string[][]}
      */
-    let newSessions= [[]];
+    let newSessions= [];
     /**
      * An array of items.
      * @type {string[][]}
@@ -164,6 +174,21 @@
      * @type {number[]}
      */
     let taughtCoursesID = [];
+    /**
+     * An array of items.
+     * @type {number[]}
+     */
+    let roomCapacities = [];
+    /**
+     * An array of items.
+     * @type {number[]}
+     */
+    let roomsId = [];
+    /**
+     * An array of items.
+     * @type {number[]}
+     */
+    let roomsFloorNumber = [];
 
     let monday = daysOfferedNew.includes('MONDAY');
     let tuesday = daysOfferedNew.includes('TUESDAY');
@@ -214,7 +239,7 @@
         courseTypeNew = "";
         newSessionEndTime = "12:30:00";
         newSessionStartTime = "12:30:00";
-        newSessionDate = "";
+        newSessionDate = currentDate;
         // Clear daysOfferedNew
         daysOfferedNew = [];
     }
@@ -227,6 +252,7 @@
      */
     function setSessionInfo(newSessionDate, newSessionStartTime, newSessionEndTime){
         newSessions.push([newSessionDate,newSessionStartTime,newSessionEndTime]);
+        newSessions = newSessions;
     }
     function confirmTester() {
         // Reset input fields
@@ -251,6 +277,8 @@
         console.log(newSessionStartTime);
         console.log(newSessionEndTime);
         console.log(newSessions)
+        console.log(roomIdNew)
+        console.log(courseTypeNewId)
     }
 
     /**
@@ -350,6 +378,51 @@
         sessionDate = taughtCoursesSessionsDate[index];
     }
 
+    function getRoomId() {
+        for (let i = 0; i < roomsId.length; i++) {
+            if (roomsFloorNumber[i] === floorNumberNew && roomCapacities[i] === roomNumberNew) {
+                roomIdNew = roomsId[i]; // Return the room ID if the floor number matches
+            }
+        }
+        // Return null if no matching room is found
+        return null;
+    }
+
+    function getCourseTypeId() {
+        for (let i= 0; i < approvedTypes.length; i++) {
+            if (approvedTypes[i] === courseTypeNew) {
+                courseTypeNewId = approvedTypesID[i];
+            }
+        }
+        return null;
+    }
+
+    function confirmCreation(){
+        confirmTester()
+        getRoomId()
+        getCourseTypeId()
+        confirmTester()
+        const requestData = {
+            "startDate": startDateNew,
+            "endDate": endDateNew,
+            "price": priceNew,
+            "daysOffered": daysOfferedNew,
+            "roomId": roomIdNew,
+            "courseTypeId": courseTypeNewId
+        };
+        AXIOS.post("/courseOfferings/create", requestData, {
+            headers: {
+                'userToken': 'dsaw'
+            }
+
+        })
+            .then(response => {
+            })
+            .catch(e => {
+                errorType = e;
+            });
+    }
+
     onMount(async () => {
         AXIOS.get('courseOfferings/getByInstructor',{
             headers:{
@@ -422,6 +495,32 @@
 
                 approvedTypes = updatedItems1; // Update items array with the new values
                 approvedTypesID = updatedItems1Id;
+            })
+            .catch(e => {
+                errorType = e;
+            });
+
+        AXIOS.get('/rooms/getAll',{
+            headers:{
+                'userToken': 'dsaw'
+            }
+        })
+            .then(response => {
+                const rooms = response.data;
+                const holderRooms= [];
+                const holderRoomsId = []
+                const holderFloor = []
+
+                for (let i = 0; i < rooms.length; i++) {
+                    const room = rooms[i];
+                    holderRooms.push(room.capacity);
+                    holderRoomsId.push(room.id);
+                    holderFloor.push(room.floorNumber)
+                }
+
+                roomCapacities = holderRooms; // Update items array with the new values
+                roomsId = holderRoomsId;
+                roomsFloorNumber = holderFloor
             })
             .catch(e => {
                 errorType = e;
@@ -554,9 +653,20 @@
                         <button class="btn btn-sm" on:click={() => setSessionInfo(newSessionDate, newSessionStartTime, newSessionEndTime)} >Confirm Session</button>
                     </div>
                 </div>
+                <div class="scrollable-list-right-sessions">
+                    {#each newSessions as session}
+                        <div class="bg-secondary-content/5 info-blocks">
+                            <div class="time-info">
+                                <span>Date: {session[0]}</span>
+                                <span>Start Time: {session[1]}</span>
+                                <span>End Time: {session[2]}</span>
+                                </div>
+                            </div>
+                        {/each}
+                </div>
                 <!-- Button container -->
                 <div class="button-container">
-                    <button class="bg-green-500/65 hover:bg-green-500/80 btn btn-sm" on:click={() => confirmTester()}>Confirm</button>
+                    <button class="bg-green-500/65 hover:bg-green-500/80 btn btn-sm" on:click={() => confirmCreation()}>Confirm</button>
                     <button class=" btn btn-sm bg-red-500/65 hover:bg-red-500/80" on:click={() => resetUpdateContentInfo()}>Cancel</button>
                 </div>
             </div>
@@ -670,6 +780,20 @@
         align-items: flex-start; /* Center items horizontally */
         list-style-type: none; /* Remove list-style (bullets) */
     }
+    .scrollable-list-right-sessions {
+        max-height: 45%; /* Limit the height of the list */
+        max-width: 100%;
+        margin-top: 0.5vh;
+        margin-bottom: 0.5vh;
+        overflow-y: auto; /* Enable vertical scrolling */
+        border-radius: 10px; /* Rounded corners */
+        padding-left: 10px ;
+        padding-right: 10px ;
+        display: flex; /* Use flexbox */
+        flex-direction: column; /* Arrange items vertically */
+        align-items: flex-start; /* Center items horizontally */
+        list-style-type: none; /* Remove list-style (bullets) */
+    }
 
     /* Style for list items */
     .list-item-left {
@@ -723,7 +847,7 @@
         border-radius: 10px;
         display: inline-block; /* Display the input containers in a line */
         width: calc(25% - 2%); /* Set width to occupy 1/3 of the available space */
-        font-size: 2.1vh;
+        font-size: 1.5vh;
         text-align: center; /* Reset text alignment to left within the input container */
 
     }
